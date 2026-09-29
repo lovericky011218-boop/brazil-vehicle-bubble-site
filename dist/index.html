@@ -6,7 +6,7 @@
     <meta name="description" content="巴西 MPV、SUV 与 Car 的车长、建议价与销量交互气泡图" />
     <title>巴西乘用车市场图谱</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23172a31'/%3E%3Ccircle cx='25' cy='36' r='14' fill='%23dcf8df' stroke='%2335bd68' stroke-width='4'/%3E%3Cpath d='M44 12l3.2 9.8h10.3l-8.3 6 3.2 9.8-8.4-6.1-8.3 6.1 3.2-9.8-8.3-6h10.3z' fill='%23ef3c2f'/%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="./styles.css?v=5" />
+    <link rel="stylesheet" href="./styles.css?v=6" />
   </head>
   <body>
     <main class="app-shell">
@@ -91,7 +91,7 @@
               <label class="star-field"><span>车长（mm）</span><input id="starLength" type="number" min="1000" max="8000" step="1" required /></label>
               <label class="star-field"><span>价格（BRL）</span><input id="starPrice" type="number" min="1" step="1" required /></label>
             </div>
-            <button class="star-save" type="submit">保存五角星</button>
+            <div class="star-actions"><button class="star-delete" id="deleteStar" type="button">删除当前</button><button class="star-save" type="submit">保存五角星</button></div>
             <p class="star-feedback" id="starFeedback" role="status">修改会保存在当前浏览器</p>
           </form>
 
@@ -101,6 +101,6 @@
         </aside>
       </section>
     </main>
-    <script src="./data.js?v=4"></script><script src="./app.js?v=4"></script>
+    <script src="./data.js?v=4"></script><script src="./app.js?v=5"></script>
   </body>
 </html>
