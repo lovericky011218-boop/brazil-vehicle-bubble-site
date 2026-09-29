@@ -31,6 +31,8 @@ h1 { margin:0; font-size:clamp(1.55rem,2.3vw,2.5rem); line-height:1.14; letter-s
 .stat-strip span { color:var(--muted); font-size:.78rem; font-weight:720; }
 .stat-strip strong { overflow:hidden; font-size:1rem; text-overflow:ellipsis; white-space:nowrap; }
 .workspace { display:grid; grid-template-columns:minmax(0,1fr) 304px; gap:11px; align-items:start; }
+.chart-column { display:grid; min-width:0; gap:11px; }
+.below-chart { display:grid; grid-template-columns:1fr 1fr; gap:11px; align-items:start; }
 .chart-card,.detail-card,.star-card,.range-card,.ranking-card { border:1px solid var(--line); border-radius:18px; background:var(--card); box-shadow:0 12px 40px rgba(27,45,56,.05); }
 .chart-card { min-width:0; overflow:hidden; }
 .chart-head { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 17px 11px; border-bottom:1px solid var(--line-soft); }
@@ -70,5 +72,5 @@ h1 { margin:0; font-size:clamp(1.55rem,2.3vw,2.5rem); line-height:1.14; letter-s
 #rankingList button:hover { background:#f3f6f6; } #rankingList button::before { content:counter(ranking,decimal-leading-zero); color:#9aa6ac; font-size:.74rem; font-weight:780; }
 .ranking-name { overflow:hidden; font-size:.78rem; font-weight:760; text-overflow:ellipsis; white-space:nowrap; } .ranking-value { color:var(--muted); font-size:.76rem; } .ranking-empty { padding:12px 4px; color:var(--muted); font-size:.78rem; }
 @media (max-width:1100px) { .filter-board{grid-template-columns:repeat(3,1fr)} .search-field{grid-column:span 2} .body-section,.energy-section{grid-column:1/-1} .workspace{grid-template-columns:1fr} .side-panel{grid-template-columns:1fr 1fr} }
-@media (max-width:720px) { .app-shell{padding:15px 11px 24px} .page-head{align-items:flex-start} .plain-button{padding:8px 10px;font-size:.76rem} .measure-line{line-height:1.55} .filter-board{grid-template-columns:1fr 1fr} .search-field{grid-column:1/-1} .body-section,.energy-section{grid-column:1/-1} .stat-strip{grid-template-columns:1fr 1fr} .stat-strip article{display:block} .stat-strip strong{display:block;margin-top:4px} .chart-head{align-items:flex-start;flex-direction:column} .zoom-controls{width:100%;overflow-x:auto} .chart-wrap{height:520px} .chart-foot{flex-direction:column;gap:4px} .side-panel{grid-template-columns:1fr} }
+@media (max-width:720px) { .app-shell{padding:15px 11px 24px} .page-head{align-items:flex-start} .plain-button{padding:8px 10px;font-size:.76rem} .measure-line{line-height:1.55} .filter-board{grid-template-columns:1fr 1fr} .search-field{grid-column:1/-1} .body-section,.energy-section{grid-column:1/-1} .stat-strip{grid-template-columns:1fr 1fr} .stat-strip article{display:block} .stat-strip strong{display:block;margin-top:4px} .chart-head{align-items:flex-start;flex-direction:column} .zoom-controls{width:100%;overflow-x:auto} .chart-wrap{height:520px} .chart-foot{flex-direction:column;gap:4px} .below-chart,.side-panel{grid-template-columns:1fr} }
 @media (max-width:420px) { .page-head{display:block} .plain-button{margin-top:12px} .filter-board{grid-template-columns:1fr} .search-field{grid-column:auto} .field{min-height:52px} .chart-wrap{height:480px} }
