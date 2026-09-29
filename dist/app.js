@@ -5,7 +5,7 @@
   const references = (() => {
     try {
       const saved = JSON.parse(localStorage.getItem(referenceStorageKey));
-      if (Array.isArray(saved) && saved.length) return saved.filter((row) => row?.id && row?.model && Number.isFinite(row.length) && Number.isFinite(row.price)).map((row) => ({ ...row, body: row.body || "SUV", reference: true }));
+      if (Array.isArray(saved)) return saved.filter((row) => row?.id && row?.model && Number.isFinite(row.length) && Number.isFinite(row.price)).map((row) => ({ ...row, body: row.body || "SUV", reference: true }));
     } catch (_) {}
     return defaultReferences.map((row) => ({ ...row }));
   })();
@@ -57,7 +57,7 @@
   const controls = Object.fromEntries([
     "yearSelect", "sizeBand", "priceBand", "searchInput", "labelMode", "rankingFuel",
     "lengthMin", "lengthMax", "priceMin", "priceMax", "salesMin", "salesMax",
-    "starSelect", "starModel", "starBody", "starLength", "starPrice",
+    "starSelect", "starModel", "starBody", "starLength", "starPrice", "deleteStar",
   ].map((id) => [id, document.querySelector(`#${id}`)]));
 
   function setReferenceFeedback(text) { document.querySelector("#starFeedback").textContent = text; }
@@ -70,6 +70,7 @@
     controls.starBody.value = row?.body || "SUV";
     controls.starLength.value = row?.length || "";
     controls.starPrice.value = row?.price || "";
+    controls.deleteStar.disabled = !row;
   }
 
   function beginNewReference() {
@@ -92,6 +93,22 @@
     state.selectedId = row.id;
     syncReferenceEditor(row);
     setReferenceFeedback("已保存到当前浏览器");
+    render();
+  }
+
+  function deleteReference() {
+    const selectedId = controls.starSelect.value;
+    const index = references.findIndex((item) => item.id === selectedId);
+    if (index < 0) return;
+    const deleted = references[index];
+    if (!window.confirm(`确定删除五角星“${deleted.model}”吗？`)) return;
+    references.splice(index, 1);
+    try { localStorage.setItem(referenceStorageKey, JSON.stringify(references)); } catch (_) {}
+    const next = references[Math.min(index, references.length - 1)] || null;
+    state.selectedId = next?.id || null;
+    syncReferenceEditor(next);
+    updateDetail(next);
+    setReferenceFeedback(`已删除“${deleted.model}”`);
     render();
   }
 
@@ -412,6 +429,7 @@
   document.querySelector("#toggleFuels").addEventListener("click", () => { state.fuels = state.fuels.size === fuels.length ? new Set() : new Set(fuels); renderChips(); render(); });
   document.querySelector("#showAllRanges").addEventListener("click", () => { state.ranges = { length: [...limits.length], price: [...limits.price], sales: [...limits.sales] }; controls.sizeBand.value = "ALL"; controls.priceBand.value = "ALL"; syncRangeInputs(); setViewToRanges(); render(); });
   document.querySelector("#addStar").addEventListener("click", beginNewReference);
+  controls.deleteStar.addEventListener("click", deleteReference);
   document.querySelector("#starForm").addEventListener("submit", saveReference);
   controls.starSelect.addEventListener("change", () => { const row = references.find((item) => item.id === controls.starSelect.value); if (row) { syncReferenceEditor(row); state.selectedId = row.id; updateDetail(row); render(); } else beginNewReference(); });
   document.querySelector("#resetAll").addEventListener("click", resetAll);
