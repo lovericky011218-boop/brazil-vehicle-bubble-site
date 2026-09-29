@@ -6,7 +6,7 @@
     <meta name="description" content="巴西 MPV、SUV 与 Car 的车长、建议价与销量交互气泡图" />
     <title>巴西乘用车市场图谱</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23172a31'/%3E%3Ccircle cx='25' cy='36' r='14' fill='%23dcf8df' stroke='%2335bd68' stroke-width='4'/%3E%3Cpath d='M44 12l3.2 9.8h10.3l-8.3 6 3.2 9.8-8.4-6.1-8.3 6.1 3.2-9.8-8.3-6h10.3z' fill='%23ef3c2f'/%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="./styles.css?v=4" />
+    <link rel="stylesheet" href="./styles.css?v=5" />
   </head>
   <body>
     <main class="app-shell">
@@ -44,7 +44,8 @@
       </section>
 
       <section class="workspace">
-        <article class="chart-card">
+        <div class="chart-column">
+          <article class="chart-card">
           <div class="chart-head">
             <div><h2>车长与价格分布</h2><p>滚轮缩放，拖动平移；红色五角星为可编辑参考车型。</p></div>
             <div class="zoom-controls">
@@ -58,7 +59,22 @@
             <div class="empty-state" id="emptyState" hidden>当前筛选条件下没有可绘制的车型</div>
           </div>
           <footer class="chart-foot"><span id="sourceNote">正在读取数据…</span><span>销量按车型＋动力形式合并</span></footer>
-        </article>
+          </article>
+
+          <div class="below-chart">
+          <section class="range-card">
+            <div class="side-title-row"><p class="side-label">自定义范围</p><button type="button" id="showAllRanges">查看全范围</button></div>
+            <div class="range-group"><span>车长（mm）</span><div><input id="lengthMin" type="number" step="10" /><b>至</b><input id="lengthMax" type="number" step="10" /></div></div>
+            <div class="range-group"><span>价格（BRL）</span><div><input id="priceMin" type="number" step="1000" /><b>至</b><input id="priceMax" type="number" step="1000" /></div></div>
+            <div class="range-group"><span>销量</span><div><input id="salesMin" type="number" step="100" /><b>至</b><input id="salesMax" type="number" step="100" /></div></div>
+          </section>
+
+          <section class="ranking-card">
+            <div class="side-title-row"><p class="side-label">当前销量 Top 5</p><label class="ranking-filter"><span class="sr-only">Top 5 动力形式</span><select id="rankingFuel"><option value="ALL">全部动力</option></select></label></div>
+            <ol id="rankingList"></ol>
+          </section>
+          </div>
+        </div>
 
         <aside class="side-panel">
           <section class="detail-card" aria-live="polite">
@@ -79,17 +95,9 @@
             <p class="star-feedback" id="starFeedback" role="status">修改会保存在当前浏览器</p>
           </form>
 
-          <section class="range-card">
-            <div class="side-title-row"><p class="side-label">自定义范围</p><button type="button" id="showAllRanges">查看全范围</button></div>
-            <div class="range-group"><span>车长（mm）</span><div><input id="lengthMin" type="number" step="10" /><b>至</b><input id="lengthMax" type="number" step="10" /></div></div>
-            <div class="range-group"><span>价格（BRL）</span><div><input id="priceMin" type="number" step="1000" /><b>至</b><input id="priceMax" type="number" step="1000" /></div></div>
-            <div class="range-group"><span>销量</span><div><input id="salesMin" type="number" step="100" /><b>至</b><input id="salesMax" type="number" step="100" /></div></div>
-          </section>
 
-          <section class="ranking-card">
-            <div class="side-title-row"><p class="side-label">当前销量 Top 5</p><label class="ranking-filter"><span class="sr-only">Top 5 动力形式</span><select id="rankingFuel"><option value="ALL">全部动力</option></select></label></div>
-            <ol id="rankingList"></ol>
-          </section>
+
+
         </aside>
       </section>
     </main>
