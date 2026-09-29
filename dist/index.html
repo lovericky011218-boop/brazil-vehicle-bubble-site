@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="巴西 MPV、SUV 与 Car 的车长、建议价与销量交互气泡图" />
+    <title>巴西乘用车市场图谱</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23172a31'/%3E%3Ccircle cx='25' cy='36' r='14' fill='%23dcf8df' stroke='%2335bd68' stroke-width='4'/%3E%3Cpath d='M44 12l3.2 9.8h10.3l-8.3 6 3.2 9.8-8.4-6.1-8.3 6.1 3.2-9.8-8.3-6h10.3z' fill='%23ef3c2f'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css?v=4" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="page-head">
+        <div>
+          <p class="eyebrow">BRAZIL MARKET EXPLORER</p>
+          <h1>巴西乘用车市场图谱</h1>
+          <p class="measure-line">横轴：车长　纵轴：巴西 MSRP 中位数（BRL）　气泡面积：销量</p>
+        </div>
+        <button class="plain-button" id="resetAll" type="button">恢复首屏</button>
+      </header>
+
+      <section class="filter-board" aria-label="图表筛选">
+        <label class="field country-field"><span>国家</span><select id="countrySelect"><option value="Brazil">巴西</option></select></label>
+        <label class="field"><span>年份</span><select id="yearSelect"><option value="2026">2026 YTD</option><option value="2025">2025</option><option value="2024">2024</option></select></label>
+        <label class="field"><span>尺寸段</span><select id="sizeBand"><option value="4400_4800">4400–4800 mm</option><option value="ALL">全部尺寸</option><option value="LT4000">4000 mm 以下</option><option value="4000_4400">4000–4399 mm</option><option value="4400_4600">4400–4599 mm</option><option value="4600_4800">4600–4799 mm</option><option value="4800_5000">4800–4999 mm</option><option value="GE5000">5000 mm 及以上</option><option value="CUSTOM">自定义范围</option></select></label>
+        <label class="field"><span>价格段</span><select id="priceBand"><option value="50000_700000">R$50,000–R$700,000</option><option value="ALL">全部价格</option><option value="0_100000">R$100,000 以下</option><option value="100000_150000">R$100,000–R$149,999</option><option value="150000_250000">R$150,000–R$249,999</option><option value="250000_400000">R$250,000–R$399,999</option><option value="400000_700000">R$400,000–R$699,999</option><option value="700000_INF">R$700,000 及以上</option><option value="CUSTOM">自定义范围</option></select></label>
+        <label class="field search-field"><span>车型搜索</span><input id="searchInput" type="search" placeholder="输入品牌或车型，匹配项高亮" autocomplete="off" /></label>
+
+        <div class="filter-section body-section">
+          <div class="filter-caption"><span>车身形式</span><button id="toggleBodies" type="button">全选 / 取消</button></div>
+          <div class="chip-list" id="bodyFilter" aria-label="车身形式筛选"></div>
+        </div>
+        <div class="filter-section energy-section">
+          <div class="filter-caption"><span>动力形式</span><button id="toggleFuels" type="button">全选 / 取消</button></div>
+          <div class="chip-list" id="fuelFilter" aria-label="动力形式筛选"></div>
+        </div>
+      </section>
+
+      <section class="stat-strip" aria-label="当前筛选摘要">
+        <article><span>匹配车型</span><strong id="statCount">—</strong></article>
+        <article><span>合计销量</span><strong id="statSales">—</strong></article>
+        <article><span>价格中位数</span><strong id="statMedian">—</strong></article>
+        <article><span>最高销量</span><strong id="statLeader">—</strong></article>
+      </section>
+
+      <section class="workspace">
+        <article class="chart-card">
+          <div class="chart-head">
+            <div><h2>车长与价格分布</h2><p>滚轮缩放，拖动平移；红色五角星为可编辑参考车型。</p></div>
+            <div class="zoom-controls">
+              <label><span class="sr-only">标签显示</span><select id="labelMode"><option value="top">销量前 25</option><option value="all">全部标签</option><option value="none">仅悬停</option></select></label>
+              <button type="button" id="zoomOut" aria-label="缩小">−</button><button type="button" id="zoomReset">重置视图</button><button type="button" id="zoomIn" aria-label="放大">＋</button>
+            </div>
+          </div>
+          <div class="chart-wrap" id="chartWrap">
+            <svg id="bubbleChart" role="img" aria-label="巴西 MPV、SUV 与 Car 的车长、巴西建议价与销量气泡图"></svg>
+            <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+            <div class="empty-state" id="emptyState" hidden>当前筛选条件下没有可绘制的车型</div>
+          </div>
+          <footer class="chart-foot"><span id="sourceNote">正在读取数据…</span><span>销量按车型＋动力形式合并</span></footer>
+        </article>
+
+        <aside class="side-panel">
+          <section class="detail-card" aria-live="polite">
+            <p class="side-label">车型详情</p><h2 id="detailModel">选择一个标记</h2><p class="detail-fuel" id="detailFuel">点击气泡或五角星后可固定查看</p>
+            <dl class="detail-grid"><div><dt>车身</dt><dd id="detailBody">—</dd></div><div><dt>车长</dt><dd id="detailLength">—</dd></div><div><dt>巴西 MSRP</dt><dd id="detailPrice">—</dd></div><div><dt>销量</dt><dd id="detailSales">—</dd></div><div><dt>销量排名</dt><dd id="detailRank">—</dd></div></dl>
+          </section>
+
+          <form class="star-card" id="starForm">
+            <div class="side-title-row"><p class="side-label">五角星管理</p><button type="button" id="addStar">新增</button></div>
+            <label class="star-field"><span>选择五角星</span><select id="starSelect"></select></label>
+            <div class="star-grid">
+              <label class="star-field"><span>名称</span><input id="starModel" type="text" maxlength="30" required /></label>
+              <label class="star-field"><span>车身形式</span><select id="starBody"><option>SUV</option><option>Car</option><option>MPV</option></select></label>
+              <label class="star-field"><span>车长（mm）</span><input id="starLength" type="number" min="1000" max="8000" step="1" required /></label>
+              <label class="star-field"><span>价格（BRL）</span><input id="starPrice" type="number" min="1" step="1" required /></label>
+            </div>
+            <button class="star-save" type="submit">保存五角星</button>
+            <p class="star-feedback" id="starFeedback" role="status">修改会保存在当前浏览器</p>
+          </form>
+
+          <section class="range-card">
+            <div class="side-title-row"><p class="side-label">自定义范围</p><button type="button" id="showAllRanges">查看全范围</button></div>
+            <div class="range-group"><span>车长（mm）</span><div><input id="lengthMin" type="number" step="10" /><b>至</b><input id="lengthMax" type="number" step="10" /></div></div>
+            <div class="range-group"><span>价格（BRL）</span><div><input id="priceMin" type="number" step="1000" /><b>至</b><input id="priceMax" type="number" step="1000" /></div></div>
+            <div class="range-group"><span>销量</span><div><input id="salesMin" type="number" step="100" /><b>至</b><input id="salesMax" type="number" step="100" /></div></div>
+          </section>
+
+          <section class="ranking-card">
+            <div class="side-title-row"><p class="side-label">当前销量 Top 5</p><label class="ranking-filter"><span class="sr-only">Top 5 动力形式</span><select id="rankingFuel"><option value="ALL">全部动力</option></select></label></div>
+            <ol id="rankingList"></ol>
+          </section>
+        </aside>
+      </section>
+    </main>
+    <script src="./data.js?v=4"></script><script src="./app.js?v=4"></script>
+  </body>
+</html>

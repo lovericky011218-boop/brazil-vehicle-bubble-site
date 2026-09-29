@@ -1,0 +1,122 @@
+[
+  {
+    "model": "Chevrolet Sonic",
+    "fuel": "ICE",
+    "segment": "SUV",
+    "prices": [129990, 135990],
+    "sourceUrl": "https://www.chevrolet.com.br/suvs/sonic",
+    "note": "巴西官方两款配置 Premier 与 RS；取中位数"
+  },
+  {
+    "model": "Jeep Renegade",
+    "fuel": "MEV",
+    "segment": "SUV",
+    "prices": [158690, 175990],
+    "sourceUrl": "https://autoesporte.globo.com/carros/lancamentos-de-carros/noticia/2026/03/jeep-renegade-2027-precos-equipamentos-versoes-consumo.ghtml",
+    "note": "巴西 MHEV 两款配置 Longitude 与 Sahara；取中位数"
+  },
+  {
+    "model": "Leapmotor C10",
+    "fuel": "REEV",
+    "segment": "SUV",
+    "prices": [219990],
+    "sourceUrl": "https://www.leapmotorvm.com.br/veiculos/leapmotor-c10",
+    "note": "巴西公开建议价"
+  },
+  {
+    "model": "Hyundai i20",
+    "fuel": "ICE",
+    "segment": "Car",
+    "prices": [99990, 104990, 125990, 128990, 134990, 139990],
+    "sourceUrl": "https://www.hyundai.com.br/veiculos/novo-hyundai-i20.html",
+    "note": "巴西官方六款配置；取中位数"
+  },
+  {
+    "model": "Geely EX5",
+    "fuel": "PHEV",
+    "segment": "SUV",
+    "prices": [199990, 219990, 244990],
+    "sourceUrl": "https://guiadocarro.net.br/geely-ex5-em-i-estreia-em-tres-versoes-e-parte-de-r-189-990/",
+    "note": "EX5 EM-i 巴西三款公开指导价；取中位数，不采用促销价"
+  },
+  {
+    "model": "Aion Aion UT",
+    "fuel": "BEV",
+    "segment": "Car",
+    "prices": [139990, 159990],
+    "sourceUrl": "https://autoesporte.globo.com/carros/lancamentos-de-carros/noticia/2026/06/gac-aion-ut-precos-versoes-equipamentos-autonomia.ghtml",
+    "note": "巴西两款配置 Premium 与 Elite；取中位数"
+  },
+  {
+    "model": "Jeep Commander",
+    "fuel": "MEV",
+    "segment": "SUV",
+    "prices": [255690, 283790],
+    "sourceUrl": "https://www.jeep.com.br/commander.html",
+    "note": "巴西 MHEV 两款配置 Limited 与 Overland；取中位数"
+  },
+  {
+    "model": "ORA Ora 5",
+    "fuel": "BEV",
+    "segment": "SUV",
+    "prices": [159000],
+    "sourceUrl": "https://www.gwmmotors.com.br/pt/media-center/news/2026/gwm-lanca-o-ora-5-seu-primeiro-suv-100-eletrico-que-combina-espaco-tecnologia-e-autonomia-de-ate-435-km",
+    "note": "巴西官方发布价"
+  },
+  {
+    "model": "ChangAn CS75",
+    "fuel": "ICE",
+    "segment": "SUV",
+    "prices": [199990],
+    "sourceUrl": "https://caoachangan.com.br/blog/caoa-changan-cs75-chega-ao-brasil-para-redefinir-o-conceito-de-suv-familiar-de-luxo",
+    "note": "巴西官方发布指导价；不采用后续促销价"
+  },
+  {
+    "model": "BYD Sealion 7",
+    "fuel": "BEV",
+    "segment": "SUV",
+    "prices": [339990],
+    "sourceUrl": "https://autoesporte.globo.com/carros/lancamentos-de-carros/noticia/2026/05/byd-sealion-07-suv-brasil-531-cv-preco.ghtml",
+    "note": "巴西版本公开指导价"
+  },
+  {
+    "model": "Toyota bZ4X",
+    "fuel": "BEV",
+    "segment": "SUV",
+    "prices": [419990],
+    "sourceUrl": "https://g1.globo.com/carros/noticia/2026/06/23/toyota-bz4x-suv-eletrico.ghtml",
+    "note": "巴西版本单一配置建议价"
+  },
+  {
+    "model": "Lexus RZ",
+    "fuel": "BEV",
+    "segment": "SUV",
+    "prices": [499990],
+    "sourceUrl": "https://quatrorodas.abril.com.br/carros-eletricos/lexus-rz-500e-chega-por-r-499-990-e-e-o-primeiro-eletrico-da-toyota-no-brasil/",
+    "note": "Lexus RZ 500e 巴西建议价"
+  },
+  {
+    "model": "JMEV EV3",
+    "fuel": "BEV",
+    "segment": "Car",
+    "prices": [99990],
+    "sourceUrl": "https://www.carnow.com.br/2026/04/10/r-69-990-jmev-ev2-e-ev3-sao-os-novos-carros-eletricos-mais-baratos-do-brasil/",
+    "note": "巴西代表商公开单一配置价格"
+  },
+  {
+    "model": "Ferrari Amalfi",
+    "fuel": "ICE",
+    "segment": "Car",
+    "prices": [3700000],
+    "sourceUrl": "https://www.cnnbrasil.com.br/auto/ferrari-amalfi-chega-ao-brasil-por-r-37-milhoes-veja-fotos/",
+    "note": "巴西官方进口商公布起售价；定制选装未作为独立配置计入"
+  },
+  {
+    "model": "Seres SF5",
+    "fuel": "REEV",
+    "segment": "SUV",
+    "prices": [439900],
+    "sourceUrl": "https://www.webmotors.com.br/wm1/carros/lancamentos/com-585-cv-seres-5-chega-ao-brasil-por-r-415-mil/",
+    "note": "巴西公开的 Seres 5 EVR（SF5）价格"
+  }
+]
