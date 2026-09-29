@@ -59,7 +59,11 @@ h1 { margin:0; font-size:clamp(1.55rem,2.3vw,2.5rem); line-height:1.14; letter-s
 .star-field { display:grid; gap:5px; margin-top:11px; color:var(--muted); font-size:.72rem; font-weight:720; }
 .star-field input,.star-field select { min-width:0; width:100%; padding:8px 7px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); font-size:.78rem; }
 .star-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 8px; }
-.star-save { width:100%; margin-top:12px; padding:9px; border:0; border-radius:9px; background:#ef3c2f; color:#fff; cursor:pointer; font-weight:780; }
+.star-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+.star-actions button { padding:9px; border-radius:9px; cursor:pointer; font-weight:780; }
+.star-save { border:0; background:#ef3c2f; color:#fff; }
+.star-delete { border:1px solid #ef3c2f; background:#fff; color:#c92f24; }
+.star-delete:disabled { border-color:var(--line); color:#a4adb2; cursor:not-allowed; }
 .star-feedback { min-height:17px; margin:7px 0 0; color:var(--muted); font-size:.68rem; }
 .range-group { margin-top:13px; } .range-group>span { display:block; margin-bottom:6px; color:var(--muted); font-size:.74rem; font-weight:720; }
 .range-group>div { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:6px; }
