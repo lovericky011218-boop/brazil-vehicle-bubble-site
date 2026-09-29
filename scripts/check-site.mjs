@@ -24,10 +24,12 @@ assert.deepEqual(Array.from(REFERENCE_DATA, (row) => [row.model, row.length, row
 assert.ok(VEHICLE_DATA.some((row) => row.model === "Toyota bZ4X" && row.price === 419990));
 assert.ok(VEHICLE_DATA.some((row) => row.model === "Chevrolet Sonic" && row.length === 4230));
 for (const id of ["countrySelect", "yearSelect", "sizeBand", "priceBand", "bodyFilter", "fuelFilter", "rankingFuel"]) assert.match(html, new RegExp(`id="${id}"`));
-for (const id of ["starForm", "starSelect", "starModel", "starBody", "starLength", "starPrice", "addStar"]) assert.match(html, new RegExp(`id="${id}"`));
+for (const id of ["starForm", "starSelect", "starModel", "starBody", "starLength", "starPrice", "addStar", "deleteStar"]) assert.match(html, new RegExp(`id="${id}"`));
 for (const phrase of ["ignoreChartFuel", "ignoreQuery", "currentMatchedRows", "matchedIds", "mergeRows", "Unspecified", "BRL", "set_brazil_market_filters"]) assert.match(app, new RegExp(phrase));
 assert.match(html, /匹配项高亮/);
 assert.match(app, /brazil-market-reference-stars-v1/);
+assert.match(app, /function deleteReference/);
+assert.match(app, /if \\(Array\\.isArray\\(saved\\)\\) return saved/);
 assert.doesNotMatch(`${html}\n${app}`, /PUP|价格（EUR）|欧元价格/);
 
 console.log(`Checked ${VEHICLE_DATA.length} Brazil aggregate rows and ${REFERENCE_DATA.length} reference vehicles.`);
