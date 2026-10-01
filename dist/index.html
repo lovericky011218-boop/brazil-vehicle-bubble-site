@@ -6,7 +6,7 @@
     <meta name="description" content="巴西 MPV、SUV 与 Car 的车长、建议价与销量交互气泡图" />
     <title>巴西乘用车市场图谱</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23172a31'/%3E%3Ccircle cx='25' cy='36' r='14' fill='%23dcf8df' stroke='%2335bd68' stroke-width='4'/%3E%3Cpath d='M44 12l3.2 9.8h10.3l-8.3 6 3.2 9.8-8.4-6.1-8.3 6.1 3.2-9.8-8.3-6h10.3z' fill='%23ef3c2f'/%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="./styles.css?v=6" />
+    <link rel="stylesheet" href="./styles.css?v=7" />
   </head>
   <body>
     <main class="app-shell">
@@ -43,36 +43,44 @@
         <article><span>最高销量</span><strong id="statLeader">—</strong></article>
       </section>
 
+      <section class="composition-board" aria-label="当前区隔销量结构">
+        <article class="composition-card"><h2>能源销量占比</h2><div id="fuelShareBar" class="share-bar" aria-hidden="true"></div><ul id="fuelShares" class="share-list"></ul></article>
+        <article class="composition-card new-energy-card"><h2>新能源率</h2><div class="share-bar" aria-hidden="true"><span id="newEnergyBar"></span></div><div class="new-energy-value"><strong id="newEnergyRate">—</strong><div class="new-energy-meta"><small>BEV + PHEV + REV（REEV）</small><span id="newEnergySales">—</span></div></div></article>
+        <article class="composition-card body-composition-card"><h2>车身形式销量占比</h2><div id="bodyShareBar" class="share-bar" aria-hidden="true"></div><ul id="bodyShares" class="share-list"></ul></article>
+        <p class="composition-note">按当前筛选范围内可绘图车型的销量计算；搜索高亮及缩放不改变占比。五角星与缺车长 / 价格而无法绘图的记录不计入。</p>
+      </section>
+
       <section class="workspace">
         <div class="chart-column">
           <article class="chart-card">
-          <div class="chart-head">
-            <div><h2>车长与价格分布</h2><p>滚轮缩放，拖动平移；红色五角星为可编辑参考车型。</p></div>
-            <div class="zoom-controls">
-              <label><span class="sr-only">标签显示</span><select id="labelMode"><option value="top">销量前 25</option><option value="all">全部标签</option><option value="none">仅悬停</option></select></label>
-              <button type="button" id="zoomOut" aria-label="缩小">−</button><button type="button" id="zoomReset">重置视图</button><button type="button" id="zoomIn" aria-label="放大">＋</button>
+            <div class="chart-head">
+              <div><h2>车长与价格分布</h2><p>滚轮缩放，拖动平移；红色五角星为可编辑参考车型。</p></div>
+              <div class="zoom-controls">
+                <button type="button" id="exportPng" title="导出当前筛选、缩放和高亮结果为高清 PNG">导出图片</button>
+                <label><span class="sr-only">标签显示</span><select id="labelMode"><option value="top">销量前 25</option><option value="all">全部标签</option><option value="none">仅悬停</option></select></label>
+                <button type="button" id="zoomOut" aria-label="缩小">−</button><button type="button" id="zoomReset">重置视图</button><button type="button" id="zoomIn" aria-label="放大">＋</button>
+              </div>
             </div>
-          </div>
-          <div class="chart-wrap" id="chartWrap">
-            <svg id="bubbleChart" role="img" aria-label="巴西 MPV、SUV 与 Car 的车长、巴西建议价与销量气泡图"></svg>
-            <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
-            <div class="empty-state" id="emptyState" hidden>当前筛选条件下没有可绘制的车型</div>
-          </div>
-          <footer class="chart-foot"><span id="sourceNote">正在读取数据…</span><span>销量按车型＋动力形式合并</span></footer>
+            <div class="chart-wrap" id="chartWrap">
+              <svg id="bubbleChart" role="img" aria-label="巴西 MPV、SUV 与 Car 的车长、巴西建议价与销量气泡图"></svg>
+              <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+              <div class="empty-state" id="emptyState" hidden>当前筛选条件下没有可绘制的车型</div>
+            </div>
+            <footer class="chart-foot"><span id="sourceNote">正在读取数据…</span><span id="exportFeedback" role="status">销量按车型＋动力形式合并</span></footer>
           </article>
 
           <div class="below-chart">
-          <section class="range-card">
-            <div class="side-title-row"><p class="side-label">自定义范围</p><button type="button" id="showAllRanges">查看全范围</button></div>
-            <div class="range-group"><span>车长（mm）</span><div><input id="lengthMin" type="number" step="10" /><b>至</b><input id="lengthMax" type="number" step="10" /></div></div>
-            <div class="range-group"><span>价格（BRL）</span><div><input id="priceMin" type="number" step="1000" /><b>至</b><input id="priceMax" type="number" step="1000" /></div></div>
-            <div class="range-group"><span>销量</span><div><input id="salesMin" type="number" step="100" /><b>至</b><input id="salesMax" type="number" step="100" /></div></div>
-          </section>
+            <section class="range-card">
+              <div class="side-title-row"><p class="side-label">自定义范围</p><button type="button" id="showAllRanges">查看全范围</button></div>
+              <div class="range-group"><span>车长（mm）</span><div><input id="lengthMin" type="number" step="10" /><b>至</b><input id="lengthMax" type="number" step="10" /></div></div>
+              <div class="range-group"><span>价格（BRL）</span><div><input id="priceMin" type="number" step="1000" /><b>至</b><input id="priceMax" type="number" step="1000" /></div></div>
+              <div class="range-group"><span>销量</span><div><input id="salesMin" type="number" step="100" /><b>至</b><input id="salesMax" type="number" step="100" /></div></div>
+            </section>
 
-          <section class="ranking-card">
-            <div class="side-title-row"><p class="side-label">当前销量 Top 5</p><label class="ranking-filter"><span class="sr-only">Top 5 动力形式</span><select id="rankingFuel"><option value="ALL">全部动力</option></select></label></div>
-            <ol id="rankingList"></ol>
-          </section>
+            <section class="ranking-card">
+              <div class="side-title-row"><p class="side-label">当前销量 Top 5</p><label class="ranking-filter"><span class="sr-only">Top 5 动力形式</span><select id="rankingFuel"><option value="ALL">全部动力</option></select></label></div>
+              <ol id="rankingList"></ol>
+            </section>
           </div>
         </div>
 
@@ -94,13 +102,9 @@
             <div class="star-actions"><button class="star-delete" id="deleteStar" type="button">删除当前</button><button class="star-save" type="submit">保存五角星</button></div>
             <p class="star-feedback" id="starFeedback" role="status">修改会保存在当前浏览器</p>
           </form>
-
-
-
-
         </aside>
       </section>
     </main>
-    <script src="./data.js?v=4"></script><script src="./app.js?v=5"></script>
+    <script src="./data.js?v=4"></script><script src="./app.js?v=6"></script>
   </body>
 </html>

@@ -29,6 +29,8 @@
   const bodies = bodyOrder.filter((value) => sourceRows.some((row) => row.body === value));
   const fuels = fuelOrder.filter((value) => sourceRows.some((row) => row.fuel === value));
   const fmtInt = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 0 });
+  const fmtShare = new Intl.NumberFormat("zh-CN", { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const shareLabel = (share) => share == null ? "—" : fmtShare.format(share);
   const fmtBrl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
   const allLengths = sourceRows.map((row) => row.length).filter(Number.isFinite);
@@ -135,7 +137,8 @@
     return sourceRows.filter((row) => {
       if (row.year !== state.year || !state.bodies.has(row.body) || (!ignoreQuery && !matchesQuery(row))) return false;
       if (!ignoreChartFuel && !state.fuels.has(row.fuel)) return false;
-      return row.length >= state.ranges.length[0] && row.length <= state.ranges.length[1]
+      return Number.isFinite(row.length) && Number.isFinite(row.price)
+        && row.length >= state.ranges.length[0] && row.length <= state.ranges.length[1]
         && row.price >= state.ranges.price[0] && row.price <= state.ranges.price[1]
         && row.sales >= state.ranges.sales[0] && row.sales <= state.ranges.sales[1];
     });
@@ -154,6 +157,7 @@
         lengths: [],
         prices: [],
         bodies: new Set(),
+        bodySales: new Map(),
         brands: new Set(),
         sourceRows: 0,
       });
@@ -162,6 +166,7 @@
       group.lengths.push(row.length);
       group.prices.push(row.price, row.priceMin, row.priceMax);
       group.bodies.add(row.body);
+      group.bodySales.set(row.body, (group.bodySales.get(row.body) || 0) + row.sales);
       if (row.brand) group.brands.add(row.brand);
       group.sourceRows += row.sourceRows || 1;
     });
@@ -178,6 +183,41 @@
 
   function currentRows() { return mergeRows(filteredBase({ ignoreQuery: true })); }
   function currentMatchedRows() { return mergeRows(filteredBase()); }
+
+  function segmentComposition(rows, fuelValues, bodyValues) {
+    const fuelSales = new Map(), bodySales = new Map();
+    let total = 0, newEnergySales = 0;
+    for (const row of rows) {
+      total += row.sales;
+      fuelSales.set(row.fuel, (fuelSales.get(row.fuel) || 0) + row.sales);
+      if (["BEV", "PHEV", "REEV", "REV"].includes(row.fuel)) newEnergySales += row.sales;
+      for (const [body, sales] of row.bodySales) bodySales.set(body, (bodySales.get(body) || 0) + sales);
+    }
+    const entries = (values, salesMap) => values.map((name) => ({ name, sales: salesMap.get(name) || 0, share: total ? (salesMap.get(name) || 0) / total : null }));
+    return { total, newEnergySales, newEnergyShare: total ? newEnergySales / total : null, fuels: entries(fuelValues, fuelSales), bodies: entries(bodyValues, bodySales) };
+  }
+
+  function updateComposition(rows) {
+    const composition = segmentComposition(rows, fuels.filter((fuel) => state.fuels.has(fuel)), bodies.filter((body) => state.bodies.has(body)));
+    for (const [id, entries] of [["fuelShares", composition.fuels], ["bodyShares", composition.bodies]]) {
+      const list = document.querySelector(`#${id}`); list.replaceChildren();
+      const bar = document.querySelector(id === "fuelShares" ? "#fuelShareBar" : "#bodyShareBar"); bar.replaceChildren();
+      for (const entry of entries) {
+        const item = document.createElement("li"), name = document.createElement("span"), value = document.createElement("strong");
+        name.textContent = entry.name; value.textContent = shareLabel(entry.share);
+        item.title = `${entry.name}：${fmtInt.format(entry.sales)} 辆 / 区隔 ${fmtInt.format(composition.total)} 辆`;
+        const color = id === "fuelShares" ? palette[entry.name].stroke : { SUV: "#078d86", Car: "#788ca0", MPV: "#c6a364" }[entry.name];
+        item.style.setProperty("--share-color", color);
+        if (!entry.sales) item.className = "zero-share";
+        const segment = document.createElement("span"); segment.style.width = `${(entry.share || 0) * 100}%`; segment.style.setProperty("--share-color", color); bar.append(segment);
+        item.append(name, value); list.append(item);
+      }
+      if (!entries.length) list.append(Object.assign(document.createElement("li"), { textContent: "未选择" }));
+    }
+    document.querySelector("#newEnergyRate").textContent = shareLabel(composition.newEnergyShare);
+    document.querySelector("#newEnergySales").textContent = `${fmtInt.format(composition.newEnergySales)} / ${fmtInt.format(composition.total)} 辆`;
+    document.querySelector("#newEnergyBar").style.width = `${(composition.newEnergyShare || 0) * 100}%`;
+  }
 
   function syncRangeInputs() {
     controls.lengthMin.value = Math.round(state.ranges.length[0]);
@@ -327,7 +367,7 @@
     const rows = currentRows();
     const matchedRows = state.query ? currentMatchedRows() : rows;
     const matchedIds = new Set(matchedRows.map((row) => row.id));
-    updateSummary(matchedRows); updateRanking();
+    updateSummary(matchedRows); updateRanking(); updateComposition(rows);
     const selected = [...rows, ...references].find((row) => row.id === state.selectedId);
     updateDetail(selected || null, rows);
     const rect = svg.getBoundingClientRect();
@@ -388,6 +428,89 @@
     svg.append(plot); emptyState.hidden = rows.length > 0;
   }
 
+  function wrapExportText(ctx, text, maxWidth) {
+    const lines = []; let line = "";
+    for (const char of text) {
+      if (line && ctx.measureText(line + char).width > maxWidth) { lines.push(line); line = ""; }
+      line += char;
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+
+  async function exportChartPng() {
+    const button = document.querySelector("#exportPng"), feedback = document.querySelector("#exportFeedback");
+    button.disabled = true; button.textContent = "导出中…";
+    let imageUrl, downloadUrl;
+    try {
+      // Native SVG + canvas keeps the current view without a screenshot dependency.
+      const chart = svg.cloneNode(true), viewBox = svg.viewBox.baseVal;
+      const width = Math.max(1200, Math.ceil(viewBox.width) + 48), chartWidth = width - 48;
+      const chartHeight = Math.round(chartWidth * viewBox.height / viewBox.width);
+      const canvas = document.createElement("canvas"), ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("当前浏览器不支持图片导出");
+      const fontFamily = getComputedStyle(document.body).fontFamily;
+      ctx.font = `16px ${fontFamily}`;
+      const composition = segmentComposition(currentRows(), fuels.filter((fuel) => state.fuels.has(fuel)), bodies.filter((body) => state.bodies.has(body)));
+      const sharesText = (entries) => entries.map((entry) => `${entry.name} ${shareLabel(entry.share)}`).join(" / ") || "未选择";
+      const notes = [
+        `国家：巴西　年份：${state.year === 2026 ? "2026年1–7月" : `${state.year}全年`}`,
+        `车身：${[...state.bodies].join(" / ") || "未选择"}　动力：${[...state.fuels].join(" / ") || "未选择"}`,
+        `筛选：车长 ${state.ranges.length.map(fmtInt.format).join("–")} mm　价格 ${state.ranges.price.map(fmtBrl.format).join("–")}　销量 ${state.ranges.sales.map(fmtInt.format).join("–")}`,
+        `当前视图：车长 ${state.viewX.map(fmtInt.format).join("–")} mm　价格 ${state.viewY.map(fmtBrl.format).join("–")}${state.query ? `　搜索高亮：${state.query}（其他车型保留低亮）` : ""}`,
+        `区隔能源销量占比：${sharesText(composition.fuels)}　新能源率 ${shareLabel(composition.newEnergyShare)}（BEV + PHEV + REV / REEV）`,
+        `区隔车身销量占比：${sharesText(composition.bodies)}　统计销量 ${fmtInt.format(composition.total)} 辆（按筛选范围，搜索/缩放不改变占比；不含参考星及无法绘图记录）`,
+      ].flatMap((text) => wrapExportText(ctx, text, chartWidth));
+      const rows = state.query ? currentMatchedRows() : currentRows();
+      const summary = `${state.query ? "匹配" : "筛选"}车型 ${fmtInt.format(rows.length)} 款　合计销量 ${fmtInt.format(rows.reduce((sum, row) => sum + row.sales, 0))} 辆　气泡面积代表销量`;
+      const footer = wrapExportText(ctx, document.querySelector("#sourceNote").textContent, chartWidth);
+      const chartTop = 112 + notes.length * 24, footerTop = chartTop + chartHeight + 28;
+      const height = footerTop + footer.length * 24 + 26;
+      canvas.width = width * 2; canvas.height = height * 2;
+      ctx.scale(2, 2); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, width, height);
+      ctx.textBaseline = "top"; ctx.fillStyle = "#18262f"; ctx.font = `bold 28px ${fontFamily}`;
+      ctx.fillText("巴西乘用车市场图谱", 24, 24);
+      ctx.fillStyle = "#6f7b83"; ctx.font = `16px ${fontFamily}`;
+      notes.forEach((line, index) => ctx.fillText(line, 24, 65 + index * 24));
+      ctx.fillStyle = "#18262f"; ctx.font = `bold 17px ${fontFamily}`;
+      ctx.fillText(summary, 24, 74 + notes.length * 24);
+      chart.setAttribute("xmlns", NS); chart.setAttribute("width", chartWidth); chart.setAttribute("height", chartHeight);
+      chart.style.fontFamily = fontFamily;
+      imageUrl = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(chart)], { type: "image/svg+xml;charset=utf-8" }));
+      const image = new Image(); image.src = imageUrl; await image.decode();
+      ctx.drawImage(image, 24, chartTop, chartWidth, chartHeight);
+      ctx.font = `16px ${fontFamily}`; let legendX = 24;
+      for (const fuel of fuels.filter((fuel) => state.fuels.has(fuel))) {
+        const colors = palette[fuel]; ctx.beginPath(); ctx.arc(legendX + 7, footerTop - 9, 7, 0, Math.PI * 2);
+        ctx.fillStyle = colors.fill; ctx.fill(); ctx.strokeStyle = colors.stroke; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = "#18262f"; ctx.fillText(fuel, legendX + 21, footerTop - 17); legendX += ctx.measureText(fuel).width + 52;
+      }
+      ctx.fillStyle = "#a32018"; ctx.fillText("★ 自定义参考车型", legendX + 12, footerTop - 17);
+      ctx.fillStyle = "#6f7b83";
+      footer.forEach((line, index) => ctx.fillText(line, 24, footerTop + 16 + index * 24));
+      if (!rows.length) { ctx.fillStyle = "#6f7b83"; ctx.fillText(state.query ? "没有匹配搜索的车型（背景车型仍保留）" : "当前筛选条件下没有可绘制的车型", width / 2 - 145, chartTop + chartHeight / 2); }
+      const png = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+      if (!png) throw new Error("图片生成失败，请重试");
+      downloadUrl = URL.createObjectURL(png);
+      const link = document.createElement("a"); link.href = downloadUrl;
+      link.download = `巴西气泡图_${state.year}.png`;
+      document.body.append(link); link.click(); link.remove();
+      const previous = feedback.querySelector("a");
+      if (previous) URL.revokeObjectURL(previous.href);
+      feedback.textContent = "高清 PNG 已生成 · ";
+      const preview = document.createElement("a"); preview.href = downloadUrl; preview.target = "_blank"; preview.rel = "noopener"; preview.textContent = "查看导出图片";
+      feedback.append(preview);
+      downloadUrl = null; // Keep the preview available until the next export or page close.
+    } catch (error) { feedback.textContent = `导出失败：${error.message || "请重试"}`; }
+    finally {
+      if (imageUrl) URL.revokeObjectURL(imageUrl);
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+      button.disabled = false; button.textContent = "导出图片";
+    }
+  }
+
+  document.querySelector("#exportPng").addEventListener("click", exportChartPng);
+
   function applySizeBand(value) {
     const bands = { ALL: limits.length, LT4000: [limits.length[0], 3999], "4000_4400": [4000, 4399], "4400_4600": [4400, 4599], "4600_4800": [4600, 4799], "4400_4800": [4400, 4800], "4800_5000": [4800, 4999], GE5000: [5000, limits.length[1]] };
     if (bands[value]) { state.ranges.length = [...bands[value]]; setViewToRanges(); syncRangeInputs(); render(); }
@@ -434,7 +557,7 @@
   controls.starSelect.addEventListener("change", () => { const row = references.find((item) => item.id === controls.starSelect.value); if (row) { syncReferenceEditor(row); state.selectedId = row.id; updateDetail(row); render(); } else beginNewReference(); });
   document.querySelector("#resetAll").addEventListener("click", resetAll);
   document.querySelector("#zoomIn").addEventListener("click", () => zoom(.78)); document.querySelector("#zoomOut").addEventListener("click", () => zoom(1.28)); document.querySelector("#zoomReset").addEventListener("click", () => { setViewToRanges(); render(); });
-  svg.addEventListener("wheel", (event) => { event.preventDefault(); const rect = svg.getBoundingClientRect(); zoom(event.deltaY > 0 ? 1.15 : .86, (event.clientX - rect.left) / rect.width, 1 - (event.clientY - rect.top) / rect.height); }, { passive: false });
+  svg.addEventListener("wheel", (event) => { event.preventDefault(); const rect = svg.getBoundingClientRect(); zoom(event.deltaY > 0 ? 1.075 : .93, (event.clientX - rect.left) / rect.width, 1 - (event.clientY - rect.top) / rect.height); }, { passive: false });
   let drag = null;
   svg.addEventListener("pointerdown", (event) => { if (event.target !== svg && event.target.tagName !== "rect") return; drag = { x: event.clientX, y: event.clientY, viewX: [...state.viewX], viewY: [...state.viewY] }; svg.setPointerCapture(event.pointerId); svg.classList.add("dragging"); });
   svg.addEventListener("pointermove", (event) => { if (!drag) return; const rect = svg.getBoundingClientRect(); const dx = (event.clientX - drag.x) / rect.width * (drag.viewX[1] - drag.viewX[0]); const dy = (event.clientY - drag.y) / rect.height * (drag.viewY[1] - drag.viewY[0]); state.viewX = clampDomain([drag.viewX[0] - dx, drag.viewX[1] - dx], limits.length, 80); state.viewY = clampDomain([drag.viewY[0] + dy, drag.viewY[1] + dy], limits.price, 50000); render(); });
